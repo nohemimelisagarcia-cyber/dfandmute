@@ -279,9 +279,24 @@
     });
   }
 </script>
+
+<!-- Cargar Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  // Reemplaza 'TU_API_KEY_AQUI' por la clave anon/public que copiaste en el Paso 1
+  const supabaseUrl = 'https://nxkjtuepsfnifllcerav.supabase.co';
+  const supabaseKey = 'sb_publishable_wEQMvMw4RKXyBdMrWoIxhg_-VKgr11m';
+  
+  // Inicializar la conexión
+  const supabase = supabaseCreateClient(supabaseUrl, supabaseKey);
+  
+  console.log("¡Conexión a Supabase establecida!");
+</script>
 <body>
 
     <!-- Header -->
+<!-- Header -->
     <header class="header" id="mainHeader" style="display:none;">
         <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
         <a class="logo" onclick="showScreen('home')">
@@ -297,10 +312,15 @@
             <a class="nav-link nav-admin" onclick="showScreen('admin')">⚙️ Admin</a>
             <!-- Auditor only -->
             <a class="nav-link nav-auditor" onclick="showScreen('auditor')">📊 Auditoría</a>
+            
             <div class="user-badge" onclick="showScreen('profile')">
                 <span id="userNameDisplay">Usuario</span>
                 <span id="userRoleBadge" class="role-badge role-user">Usuario</span>
             </div>
+
+            <!-- BOTÓN DE CERRAR SESIÓN (NUEVO) -->
+            <a class="nav-link" onclick="logout()" style="display: flex; align-items: center; gap: 5px; color: #ffa39e;">🚪 Salir</a>
+
         </nav>
     </header>
 
