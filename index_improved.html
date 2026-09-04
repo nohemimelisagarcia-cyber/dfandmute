@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deaf and Mute - Aprende LSN</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #7dd3c0; --primary-dark: #5bc0a8; --primary-light: #a8e6cf;
+            --secondary: #88d8b0; --accent: #6bb9a0; --bg: #f0f9f6;
+            --card: #ffffff; --text: #2c3e50; --text-light: #5a6c7d;
+            --border: #d1e7dd; --shadow: rgba(125, 211, 192, 0.15);
+            --success: #52c41a; --warning: #faad14; --error: #ff4d4f;
+            --admin: #722ed1; --auditor: #eb2f96;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .fade-in { animation: fadeIn 0.6s ease-out; }
+
+        /* ===== ROLES: Badges de color ===== */
+        .role-badge {
+            display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px;
+            font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .role-admin { background: #f9f0ff; color: var(--admin); border: 1px solid #d3adf7; }
+        .role-user { background: #f6ffed; color: var(--success); border: 1px solid #b7eb8f; }
+        .role-auditor { background: #fff0f6; color: var(--auditor); border: 1px solid #ffadd2; }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 1rem 2rem; box-shadow: 0 4px 20px var(--shadow);
+            position: sticky; top: 0; z-index: 1000;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo { display: flex; align-items: center; gap: 12px; font-size: 1.5rem; font-weight: bold; color: white; text-decoration: none; cursor: pointer; }
+        .logo-icon { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .nav-menu { display: flex; gap: 1.5rem; align-items: center; }
+        .nav-link { color: white; text-decoration: none; font-weight: 500; transition: opacity 0.3s; cursor: pointer; }
+        .nav-link:hover { opacity: 0.8; }
+        .user-badge { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 20px; color: white; cursor: pointer; }
+
+        /* Admin / Auditor nav items hidden by default */
+        .nav-admin, .nav-auditor, .section-admin, .section-auditor { display: none !important; }
+        body.is-admin .nav-admin, body.is-admin .section-admin { display: flex !important; }
+        body.is-auditor .nav-auditor, body.is-auditor .section-auditor { display: flex !important; }
+        body.is-auditor .nav-admin, body.is-user .nav-admin { display: none !important; }
+        body.is-user .nav-auditor { display: none !important; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .screen { display: none; animation: fadeIn 0.5s ease-out; }
+        .screen.active { display: block; }
+
+        .card {
+            background: var(--card); border-radius: 16px; padding: 2rem;
+            box-shadow: 0 4px 20px var(--shadow); border: 1px solid var(--border); margin-bottom: 1.5rem;
+        }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .card-title { font-size: 1.5rem; color: var(--text); font-weight: 600; }
+
+        .btn {
+            padding: 0.75rem 1.5rem; border: none; border-radius: 12px; cursor: pointer;
+            font-weight: 600; transition: all 0.3s; font-size: 1rem; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: white; box-shadow: 0 4px 15px rgba(125, 211, 192, 0.4); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(125, 211, 192, 0.6); }
+        .btn-secondary { background: var(--bg); color: var(--text); border: 2px solid var(--border); }
+        .btn-secondary:hover { background: var(--border); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--error); color: white; }
+        .btn-admin { background: var(--admin); color: white; }
+        .btn-auditor { background: var(--auditor); color: white; }
+        .btn-large { padding: 1rem 2rem; font-size: 1.1rem; }
+
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text); }
+        .form-input {
+            width: 100%; padding: 0.875rem 1rem; border: 2px solid var(--border);
+            border-radius: 12px; font-size: 1rem; transition: all 0.3s; background: var(--bg);
+        }
+        .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(125, 211, 192, 0.2); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+        .terms-check {
+            display: flex; align-items: flex-start; gap: 10px; margin: 1rem 0;
+            padding: 1rem; background: var(--bg); border-radius: 12px; border: 2px solid var(--border);
+        }
+
+        .hero {
+            text-align: center; padding: 4rem 2rem;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--bg) 100%);
+            border-radius: 24px; margin-bottom: 3rem;
+        }
+        .hero h1 { font-size: 3rem; color: var(--text); margin-bottom: 1rem; animation: float 3s ease-in-out infinite; }
+        .hero p { font-size: 1.25rem; color: var(--text-light); max-width: 600px; margin: 0 auto 2rem; }
+        .hero-stats { display: flex; justify-content: center; gap: 3rem; margin-top: 2rem; }
+        .stat-item { text-align: center; }
+        .stat-number { font-size: 2.5rem; font-weight: bold; color: var(--primary-dark); }
+        .stat-label { color: var(--text-light); font-size: 0.9rem; }
+
+        .levels-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+        .level-card {
+            background: var(--card); border-radius: 20px; padding: 2rem; text-align: center;
+            border: 3px solid var(--border); transition: all 0.3s; cursor: pointer; position: relative; overflow: hidden;
+        }
+        .level-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px var(--shadow); }
+        .level-card.locked { opacity: 0.6; cursor: not-allowed; filter: grayscale(0.5); }
+        .level-card.completed { border-color: var(--success); background: linear-gradient(135deg, #f6fff9 0%, var(--card) 100%); }
+        .level-card.active { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(125, 211, 192, 0.3); }
+        .level-number { width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; margin: 0 auto 1rem; }
+        .level-card.locked .level-number { background: #ccc; }
+        .level-card.completed .level-number { background: var(--success); }
+        .level-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .level-desc { color: var(--text-light); font-size: 0.9rem; margin-bottom: 1rem; }
+        .level-progress { width: 100%; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; margin-top: 1rem; }
+        .level-progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 4px; transition: width 0.5s ease; }
+
+        .lesson-content { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+        .sign-image { width: 100%; height: 300px; background: linear-gradient(135deg, var(--primary-light) 0%, var(--bg) 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 6rem; border: 3px solid var(--border); position: relative; overflow: hidden; }
+        .audio-player { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--bg); border-radius: 12px; margin-top: 1rem; }
+        .play-btn { width: 50px; height: 50px; background: var(--primary); border: none; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: transform 0.2s; }
+        .play-btn:hover { transform: scale(1.1); }
+        .audio-wave { flex: 1; height: 30px; background: repeating-linear-gradient(90deg, var(--primary), var(--primary) 2px, transparent 2px, transparent 6px); border-radius: 4px; opacity: 0.5; }
+
+        .activity-container { margin-top: 2rem; }
+        .quiz-option { display: block; width: 100%; padding: 1rem; margin-bottom: 0.75rem; background: var(--bg); border: 2px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.3s; text-align: left; font-size: 1rem; }
+        .quiz-option:hover { border-color: var(--primary); background: var(--primary-light); }
+        .quiz-option.correct { border-color: var(--success); background: #f6fff9; color: var(--success); }
+        .quiz-option.incorrect { border-color: var(--error); background: #fff2f0; color: var(--error); }
+        .quiz-option.selected { border-color: var(--primary); background: var(--primary-light); }
+
+        .progress-section { background: var(--card); padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem; box-shadow: 0 4px 20px var(--shadow); }
+        .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .progress-bar-large { width: 100%; height: 20px; background: var(--bg); border-radius: 10px; overflow: hidden; }
+        .progress-bar-large-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 10px; transition: width 0.5s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; color: white; font-size: 0.75rem; font-weight: bold; }
+
+        .profile-header { display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem; }
+        .profile-avatar { width: 100px; height: 100px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white; border: 4px solid white; box-shadow: 0 4px 15px var(--shadow); }
+        .profile-info h2 { font-size: 1.75rem; margin-bottom: 0.5rem; }
+        .profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+        .profile-stat { background: var(--bg); padding: 1rem; border-radius: 12px; text-align: center; }
+        .profile-stat-value { font-size: 1.5rem; font-weight: bold; color: var(--primary-dark); }
+
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .gallery-item { background: var(--bg); border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.3s; border: 2px solid var(--border); }
+        .gallery-item:hover { transform: scale(1.05); border-color: var(--primary); }
+        .gallery-item-image { width: 100%; height: 300px; background: linear-gradient(135deg, var(--primary-light) 0%, var(--bg) 100%); display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+        .gallery-item-info { padding: 1rem; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: var(--card); border-radius: 20px; padding: 2rem; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; animation: fadeIn 0.3s ease-out; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light); }
+
+        .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--text); color: white; padding: 1rem 1.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 3000; transform: translateX(400px); transition: transform 0.3s ease; }
+        .toast.show { transform: translateX(0); }
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--error); }
+
+        .accordion { border: 2px solid var(--border); border-radius: 12px; margin-bottom: 1rem; overflow: hidden; }
+        .accordion-header { padding: 1rem 1.5rem; background: var(--bg); cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; transition: background 0.3s; }
+        .accordion-header:hover { background: var(--primary-light); }
+        .accordion-body { padding: 0; max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease; }
+        .accordion-body.open { padding: 1.5rem; max-height: 1000px; }
+        .accordion-icon { transition: transform 0.3s; }
+        .accordion.open .accordion-icon { transform: rotate(180deg); }
+
+        .tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
+        .tab { padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-weight: 600; color: var(--text-light); border-radius: 8px; transition: all 0.3s; }
+        .tab:hover { background: var(--bg); color: var(--text); }
+        .tab.active { background: var(--primary-light); color: var(--primary-dark); }
+
+        .story-card { background: linear-gradient(135deg, #fff9f0 0%, var(--card) 100%); border: 2px solid #ffe4c4; border-radius: 16px; padding: 2rem; margin-bottom: 1.5rem; }
+        .story-title { font-size: 1.25rem; color: #d48806; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+        .story-scene { background: var(--bg); padding: 1rem; border-radius: 12px; margin: 1rem 0; border-left: 4px solid var(--primary); }
+
+        .footer { background: var(--text); color: white; padding: 3rem 2rem; margin-top: 4rem; text-align: center; }
+        .footer-content { max-width: 800px; margin: 0 auto; }
+        .footer-links { display: flex; justify-content: center; gap: 2rem; margin-top: 1rem; }
+        .footer-links a { color: var(--primary-light); text-decoration: none; }
+
+        .toggle-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .sidebar { position: fixed; left: 0; top: 0; width: 280px; height: 100%; background: var(--card); box-shadow: 4px 0 20px var(--shadow); z-index: 1500; transform: translateX(-100%); transition: transform 0.3s ease; overflow-y: auto; }
+        .sidebar.open { transform: translateX(0); }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1400; }
+        .sidebar-overlay.active { display: block; }
+        .sidebar-header { padding: 2rem; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: white; }
+        .sidebar-menu { padding: 1rem; }
+        .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 1rem; border-radius: 12px; cursor: pointer; transition: all 0.3s; color: var(--text); text-decoration: none; }
+        .sidebar-item:hover { background: var(--bg); }
+        .sidebar-item.active { background: var(--primary-light); color: var(--primary-dark); }
+        .menu-toggle { display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+
+        .evaluation-results { text-align: center; padding: 2rem; }
+        .score-circle { width: 150px; height: 150px; border-radius: 50%; background: conic-gradient(var(--primary) calc(var(--score) * 1%), var(--bg) 0); display: flex; align-items: center; justify-content: center; margin: 2rem auto; position: relative; }
+        .score-circle::before { content: ''; position: absolute; width: 120px; height: 120px; background: var(--card); border-radius: 50%; }
+        .score-text { position: relative; font-size: 2.5rem; font-weight: bold; color: var(--primary-dark); }
+
+        .chat-bubble { max-width: 80%; padding: 1rem 1.5rem; border-radius: 20px; margin-bottom: 1rem; position: relative; }
+        .chat-left { background: var(--bg); border-bottom-left-radius: 4px; margin-right: auto; }
+        .chat-right { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: white; border-bottom-right-radius: 4px; margin-left: auto; }
+        .chat-container { background: var(--card); border-radius: 16px; padding: 2rem; border: 2px solid var(--border); }
+
+        .numbers-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-top: 1rem; }
+        .number-card { aspect-ratio: 1; background: var(--bg); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid var(--border); cursor: pointer; transition: all 0.3s; }
+        .number-card:hover { background: var(--primary-light); border-color: var(--primary); transform: scale(1.1); }
+        .number-digit { font-size: 2rem; font-weight: bold; color: var(--primary-dark); }
+
+        /* ===== ADMIN PANEL STYLES ===== */
+        .admin-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .admin-stat-card { background: var(--card); border-radius: 16px; padding: 1.5rem; border-left: 5px solid var(--admin); box-shadow: 0 4px 20px var(--shadow); }
+        .admin-stat-card.blue { border-left-color: #1890ff; }
+        .admin-stat-card.green { border-left-color: var(--success); }
+        .admin-stat-card.orange { border-left-color: var(--warning); }
+        .admin-stat-value { font-size: 2rem; font-weight: bold; color: var(--text); }
+        .admin-stat-label { color: var(--text-light); font-size: 0.9rem; }
+
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .data-table th, .data-table td { padding: 0.875rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+        .data-table th { background: var(--bg); font-weight: 600; color: var(--text); font-size: 0.9rem; }
+        .data-table tr:hover { background: var(--bg); }
+        .data-table td { font-size: 0.9rem; color: var(--text-light); }
+
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .status-active { background: var(--success); }
+        .status-inactive { background: var(--error); }
+
+        /* ===== AUDITOR PANEL STYLES ===== */
+        .auditor-log-card { background: var(--card); border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; border-left: 4px solid var(--auditor); box-shadow: 0 2px 8px var(--shadow); }
+        .auditor-log-time { font-size: 0.8rem; color: var(--text-light); }
+        .auditor-log-action { font-weight: 600; color: var(--text); }
+        .auditor-log-detail { font-size: 0.85rem; color: var(--text-light); margin-top: 0.25rem; }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .hero-stats { flex-direction: column; gap: 1rem; }
+            .lesson-content { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .nav-menu { display: none; }
+            .levels-grid { grid-template-columns: 1fr; }
+            .profile-header { flex-direction: column; text-align: center; }
+            .menu-toggle { display: block; }
+            .numbers-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .high-contrast { --primary: #008080; --primary-dark: #006666; --bg: #ffffff; --text: #000000; --border: #000000; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header" id="mainHeader" style="display:none;">
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+        <a class="logo" onclick="showScreen('home')">
+            <div class="logo-icon">🤟</div>
+            <span>Deaf and Mute</span>
+        </a>
+        <nav class="nav-menu">
+            <a class="nav-link" onclick="showScreen('home')">Inicio</a>
+            <a class="nav-link" onclick="showScreen('levels')">Niveles</a>
+            <a class="nav-link" onclick="showScreen('gallery')">Galería</a>
+            <a class="nav-link" onclick="showScreen('profile')">Perfil</a>
+            <!-- Admin only -->
+            <a class="nav-link nav-admin" onclick="showScreen('admin')">⚙️ Admin</a>
+            <!-- Auditor only -->
+            <a class="nav-link nav-auditor" onclick="showScreen('auditor')">📊 Auditoría</a>
+            <div class="user-badge" onclick="showScreen('profile')">
+                <span id="userNameDisplay">Usuario</span>
+                <span id="userRoleBadge" class="role-badge role-user">Usuario</span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Sidebar móvil -->
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Deaf and Mute</h3>
+            <p>Aprende LSN</p>
+        </div>
+        <div class="sidebar-menu">
+            <a class="sidebar-item" onclick="showScreen('home'); toggleSidebar();"><span>🏠</span> Inicio</a>
+            <a class="sidebar-item" onclick="showScreen('levels'); toggleSidebar();"><span>📚</span> Niveles</a>
+            <a class="sidebar-item" onclick="showScreen('gallery'); toggleSidebar();"><span>🖼️</span> Galería</a>
+            <a class="sidebar-item" onclick="showScreen('profile'); toggleSidebar();"><span>👤</span> Perfil</a>
+            <a class="sidebar-item nav-admin" onclick="showScreen('admin'); toggleSidebar();"><span>⚙️</span> Panel Admin</a>
+            <a class="sidebar-item nav-auditor" onclick="showScreen('auditor'); toggleSidebar();"><span>📊</span> Panel Auditor</a>
+            <a class="sidebar-item" onclick="showScreen('settings'); toggleSidebar();"><span>⚙️</span> Configuración</a>
+            <hr style="border: none; border-top: 1px solid var(--border); margin: 1rem 0;">
+            <a class="sidebar-item" onclick="logout(); toggleSidebar();"><span>🚪</span> Cerrar Sesión</a>
+        </div>
+    </aside>
+
+    <!-- Main Container -->
+    <div class="container" id="mainContainer">
+
+        <!-- SCREEN: Login -->
+        <div class="screen active" id="screen-login">
+            <div class="card" style="max-width: 500px; margin: 4rem auto;">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div class="logo-icon" style="width: 80px; height: 80px; font-size: 2.5rem; margin: 0 auto 1rem;">🤟</div>
+                    <h1 style="color: var(--primary-dark);">Deaf and Mute</h1>
+                    <p style="color: var(--text-light);">Aprende Lenguaje de Señas Nicaragüense</p>
+                </div>
+
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label class="form-label">Correo electrónico</label>
+                        <input type="email" class="form-input" id="loginEmail" required placeholder="tu@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" class="form-input" id="loginPassword" required placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-large" style="width: 100%;">Iniciar Sesión</button>
+                </form>
+
+                <!-- Demo accounts info -->
+                <div style="margin-top: 1.5rem; padding: 1rem; background: var(--bg); border-radius: 12px; border: 1px dashed var(--border);">
+                    <p style="font-size: 0.85rem; color: var(--text-light); text-align: center; margin-bottom: 0.5rem;"><strong>👤 Cuentas de demostración:</strong></p>
+                    <div style="display: grid; gap: 0.5rem;">
+                        <div style="font-size: 0.8rem; color: var(--text-light); display: flex; justify-content: space-between; padding: 0.4rem 0.6rem; background: white; border-radius: 8px;">
+                            <span>admin@deafmute.ni</span><span class="role-badge role-admin">Admin</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-light); display: flex; justify-content: space-between; padding: 0.4rem 0.6rem; background: white; border-radius: 8px;">
+                            <span>estudiante@email.com</span><span class="role-badge role-user">Usuario</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-light); display: flex; justify-content: space-between; padding: 0.4rem 0.6rem; background: white; border-radius: 8px;">
+                            <span>auditor@mined.ni</span><span class="role-badge role-auditor">Auditor</span>
+                        </div>
+                        <p style="font-size: 0.75rem; color: var(--text-light); text-align: center; margin-top: 0.25rem;">Contraseña: cualquiera</p>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <p>¿No tienes cuenta? <a href="#" onclick="showScreen('register')" style="color: var(--primary-dark); font-weight: 600;">Crear cuenta</a></p>
+                    <p style="margin-top: 0.5rem;"><a href="#" onclick="showScreen('recover')" style="color: var(--text-light);">¿Olvidaste tu contraseña?</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN: Register -->
+        <div class="screen" id="screen-register">
+            <div class="card" style="max-width: 600px; margin: 2rem auto;">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <h2 style="color: var(--primary-dark);">Crear Cuenta</h2>
+                    <p style="color: var(--text-light);">Comienza tu viaje en LSN</p>
+                </div>
+                <form id="registerForm" onsubmit="handleRegister(event)">
+                    <div class="form-grid">
+                        <div class="form-group"><label class="form-label">Nombre</label><input type="text" class="form-input" id="regName" required placeholder="Tu nombre"></div>
+                        <div class="form-group"><label class="form-label">Apellido</label><input type="text" class="form-input" id="regLastName" required placeholder="Tu apellido"></div>
+                    </div>
+                    <div class="form-group"><label class="form-label">Correo electrónico</label><input type="email" class="form-input" id="regEmail" required placeholder="tu@email.com"></div>
+                    <div class="form-group"><label class="form-label">Contraseña</label><input type="password" class="form-input" id="regPassword" required placeholder="Mínimo 8 caracteres" minlength="8"></div>
+                    <div class="form-group"><label class="form-label">Confirmar contraseña</label><input type="password" class="form-input" id="regPassword2" required placeholder="Repite tu contraseña"></div>
+                    <div class="form-group">
+                        <label class="form-label">Rol de usuario</label>
+                        <select class="form-input" id="regRole">
+                            <option value="2">👤 Usuario (Estudiante)</option>
+                            <option value="1">⚙️ Administrador</option>
+                            <option value="3">📊 Auditor</option>
+                        </select>
+                    </div>
+                    <div class="terms-check">
+                        <input type="checkbox" id="acceptTerms" required>
+                        <div><label for="acceptTerms" style="cursor: pointer; font-weight: 500;">Acepto los términos y condiciones</label><p style="font-size: 0.85rem; color: var(--text-light); margin-top: 0.25rem;">Al registrarte, aceptas nuestra política de privacidad y el uso de datos educativos.</p></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-large" style="width: 100%;">Crear Cuenta</button>
+                </form>
+                <div style="text-align: center; margin-top: 1.5rem;"><p>¿Ya tienes cuenta? <a href="#" onclick="showScreen('login')" style="color: var(--primary-dark); font-weight: 600;">Iniciar sesión</a></p></div>
+            </div>
+        </div>
+
+        <!-- SCREEN: Recover Password -->
+        <div class="screen" id="screen-recover">
+            <div class="card" style="max-width: 500px; margin: 4rem auto;">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <h2 style="color: var(--primary-dark);">Recuperar Contraseña</h2>
+                    <p style="color: var(--text-light);">Te enviaremos un enlace para restablecer tu contraseña</p>
+                </div>
+                <form onsubmit="handleRecover(event)">
+                    <div class="form-group"><label class="form-label">Correo electrónico</label><input type="email" class="form-input" required placeholder="tu@email.com"></div>
+                    <button type="submit" class="btn btn-primary btn-large" style="width: 100%;">Enviar Enlace</button>
+                </form>
+                <div style="text-align: center; margin-top: 1.5rem;"><a href="#" onclick="showScreen('login')" style="color: var(--primary-dark);">Volver al inicio de sesión</a></div>
+            </div>
+        </div>
+
+        <!-- SCREEN: Home -->
+        <div class="screen" id="screen-home">
+            <div class="hero">
+                <h1>🤟 Aprende LSN</h1>
+                <p>Domina el Lenguaje de Señas Nicaragüense de forma interactiva, divertida y accesible para todos.</p>
+                <button class="btn btn-primary btn-large" onclick="showScreen('levels')">Comenzar a Aprender →</button>
+                <div class="hero-stats">
+                    <div class="stat-item"><div class="stat-number">5</div><div class="stat-label">Niveles</div></div>
+                    <div class="stat-item"><div class="stat-number">200+</div><div class="stat-label">Señas</div></div>
+                    <div class="stat-item"><div class="stat-number">50+</div><div class="stat-label">Lecciones</div></div>
+                </div>
+            </div>
+
+            <div class="progress-section">
+                <div class="progress-header">
+                    <div><h3>Tu Progreso</h3><p style="color: var(--text-light); font-size: 0.9rem;">Nivel <span id="currentLevelDisplay">1</span> de 5</p></div>
+                    <span id="progressPercent" style="font-weight: bold; color: var(--primary-dark);">0%</span>
+                </div>
+                <div class="progress-bar-large"><div class="progress-bar-large-fill" id="mainProgressBar" style="width: 0%">0%</div></div>
+            </div>
+
+            <div class="card">
+                <h2 style="margin-bottom: 1rem;">¿Por qué aprender LSN?</h2>
+                <div class="accordion" onclick="toggleAccordion(this)">
+                    <div class="accordion-header"><span>🌍 Inclusión Social</span><span class="accordion-icon">▼</span></div>
+                    <div class="accordion-body"><p>Comunicarte en LSN permite incluir a personas sordas en conversaciones, trabajos, escuelas y comunidades, eliminando barreras de comunicación.</p></div>
+                </div>
+                <div class="accordion" onclick="toggleAccordion(this)">
+                    <div class="accordion-header"><span>🧠 Desarrollo Cognitivo</span><span class="accordion-icon">▼</span></div>
+                    <div class="accordion-body"><p>Aprender señas mejora la memoria visual, la coordinación y las habilidades de procesamiento espacial del cerebro.</p></div>
+                </div>
+                <div class="accordion" onclick="toggleAccordion(this)">
+                    <div class="accordion-header"><span>💼 Oportunidades Laborales</span><span class="accordion-icon">▼</span></div>
+                    <div class="accordion-body"><p>Intérpretes de LSN son profesionales demandados en educación, salud, legales y servicios públicos en Nicaragua.</p></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 style="margin-bottom: 1.5rem;">Comienza Ahora</h2>
+                <div class="levels-grid" style="margin-top: 0;">
+                    <div class="level-card active" onclick="startLevel(1)"><div class="level-number">1</div><div class="level-title">Abecedario</div><div class="level-desc">Aprende las letras A-Z en LSN</div><div class="level-progress"><div class="level-progress-bar" style="width: 0%"></div></div></div>
+                    <div class="level-card locked" id="homeLevel2"><div class="level-number">2</div><div class="level-title">Palabras Básicas</div><div class="level-desc">Saludos, familia, colores, números</div><div class="level-progress"><div class="level-progress-bar" style="width: 0%"></div></div></div>
+                    <div class="level-card locked" id="homeLevel3"><div class="level-number">3</div><div class="level-title">Frases Básicas</div><div class="level-desc">Comunicación diaria esencial</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN: Levels -->
+        <div class="screen" id="screen-levels">
+            <div class="card">
+                <h2 style="margin-bottom: 0.5rem;">Niveles de Aprendizaje</h2>
+                <p style="color: var(--text-light); margin-bottom: 2rem;">Progresa a través de 5 niveles para dominar el LSN</p>
+                <div class="levels-grid">
+                    <div class="level-card active" id="level1Card" onclick="startLevel(1)"><div class="level-number">1</div><div class="level-title">Abecedario</div><div class="level-desc">Letras A-Z en LSN</div><span class="role-badge role-primary">Disponible</span><div class="level-progress" style="margin-top: 1rem;"><div class="level-progress-bar" id="progress1" style="width: 0%"></div></div></div>
+                    <div class="level-card locked" id="level2Card" onclick="startLevel(2)"><div class="level-number">2</div><div class="level-title">Palabras Básicas</div><div class="level-desc">Saludos, familia, colores, números, días</div><span class="role-badge role-success" id="badge2" style="display:none;">Completado</span><div class="level-progress" style="margin-top: 1rem;"><div class="level-progress-bar" id="progress2" style="width: 0%"></div></div></div>
+                    <div class="level-card locked" id="level3Card" onclick="startLevel(3)"><div class="level-number">3</div><div class="level-title">Frases Básicas</div><div class="level-desc">Frases cotidianas esenciales</div><span class="role-badge role-success" id="badge3" style="display:none;">Completado</span><div class="level-progress" style="margin-top: 1rem;"><div class="level-progress-bar" id="progress3" style="width: 0%"></div></div></div>
+                    <div class="level-card locked" id="level4Card" onclick="startLevel(4)"><div class="level-number">4</div><div class="level-title">Conversaciones</div><div class="level-desc">Diálogos en contextos reales</div><span class="role-badge role-success" id="badge4" style="display:none;">Completado</span><div class="level-progress" style="margin-top: 1rem;"><div class="level-progress-bar" id="progress4" style="width: 0%"></div></div></div>
+                    <div class="level-card locked" id="level5Card" onclick="startLevel(5)"><div class="level-number">5</div><div class="level-title">Historias y Situaciones</div><div class="level-desc">Narrativas y contextos avanzados</div><span class="role-badge role-success" id="badge5" style="display:none;">Completado</span><div class="level-progress" style="margin-top: 1rem;"><div class="level-progress-bar" id="progress5" style="width: 0%"></div></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN: Level Content -->
+        <div class="screen" id="screen-level-content">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <button class="btn btn-secondary" onclick="showScreen('levels')" style="margin-bottom: 1rem;">← Volver</button>
+                        <h2 id="levelTitle">Nivel 1: Abecedario</h2>
+                        <p id="levelSubtitle" style="color: var(--text-light);">Aprende las letras del abecedario</p>
+                    </div>
+                    <div class="level-progress" style="width: 200px;"><div class="level-progress-bar" id="levelContentProgress" style="width: 0%"></div></div>
+                </div>
+                <div class="tabs" id="levelTabs">
+                    <button class="tab active" onclick="switchTab('theory')">📖 Teoría</button>
+                    <button class="tab" onclick="switchTab('practice')">✏️ Práctica</button>
+                    <button class="tab" onclick="switchTab('evaluation')">📝 Evaluación</button>
+                </div>
+                <div id="tab-theory" class="tab-content"><div id="theoryContent"></div><div style="margin-top: 2rem; text-align: center;"><button class="btn btn-primary" onclick="switchTab('practice')">Ir a Práctica →</button></div></div>
+                <div id="tab-practice" class="tab-content" style="display:none;"><div id="practiceContent"></div></div>
+                <div id="tab-evaluation" class="tab-content" style="display:none;"><div id="evaluationContent"></div></div>
+            </div>
+        </div>
+
+        <!-- SCREEN: Gallery -->
+        <div class="screen" id="screen-gallery">
+            <div class="card">
+                <h2 style="margin-bottom: 0.5rem;">Galería de Señas</h2>
+                <p style="color: var(--text-light); margin-bottom: 2rem;">Explora todas las señas disponibles</p>
+                <div class="tabs">
+                    <button class="tab active" onclick="filterGallery('all')">Todas</button>
+                    <button class="tab" onclick="filterGallery('letters')">Abecedario</button>
+                    <button class="tab" onclick="filterGallery('words')">Palabras</button>
+                    <button class="tab" onclick="filterGallery('phrases')">Frases</button>
+                </div>
+                <div class="gallery-grid" id="galleryGrid"></div>
+            </div>
+        </div>
+
+        <!-- SCREEN: Profile -->
+        <div class="screen" id="screen-profile">
+            <div class="card">
+                <div class="profile-header">
+                    <div class="profile-avatar" id="profileAvatar">👤</div>
+                    <div class="profile-info">
+                        <h2 id="profileName">Usuario</h2>
+                        <span id="profileRoleBadge" class="role-badge role-user">Usuario</span>
+                        <p style="color: var(--text-light); margin-top: 0.5rem;">Estudiante de LSN</p>
+                        <div class="profile-stats">
+                            <div class="profile-stat"><div class="profile-stat-value" id="statLevel">1</div><div style="font-size: 0.85rem; color: var(--text-light);">Nivel Actual</div></div>
+                            <div class="profile-stat"><div class="profile-stat-value" id="statProgress">0%</div><div style="font-size: 0.85rem; color: var(--text-light);">Progreso</div></div>
+                            <div class="profile-stat"><div class="profile-stat-value" id="statCompleted">0</div><div style="font-size: 0.85rem; color: var(--text-light);">Completados</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h3 style="margin-bottom: 1.5rem;">Configuración de Perfil</h3>
+                <form onsubmit="updateProfile(event)">
+                    <div class="form-grid">
+                        <div class="form-group"><label class="form-label">Nombre</label><input type="text" class="form-input" id="profileNameInput" value="Usuario"></div>
+                        <div class="form-group"><label class="form-label">Correo</label><input type="email" class="form-input" id="profileEmailInput" value="usuario@email.com"></div>
+                    </div>
+                    <div class="form-group"><label class="form-label">Biografía</label><textarea class="form-input" rows="3" placeholder="Cuéntanos sobre ti..."></textarea></div>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </form>
+            </div>
+            <div class="card">
+                <h3 style="margin-bottom: 1rem;">Logros</h3>
+                <div id="achievementsList">
+                    <div style="padding: 1rem; background: var(--bg); border-radius: 12px; margin-bottom: 0.5rem;">🌟 <strong>Primeros Pasos</strong> - Completaste tu primera lección</div>
+                    <div style="padding: 1rem; background: var(--bg); border-radius: 12px; margin-bottom: 0.5rem; opacity: 0.5;">🔤 <strong>Maestro del Abecedario</strong> - Completa el Nivel 1</div>
+                    <div style="padding: 1rem; background: var(--bg); border-radius: 12px; margin-bottom: 0.5rem; opacity: 0.5;">💬 <strong>Conversador</strong> - Completa el Nivel 4</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN: Settings -->
+        <div class="screen" id="screen-settings">
+            <div class="card">
+                <h2 style="margin-bottom: 1.5rem;">Configuración</h2>
+                <div style="margin-bottom: 2rem;">
+                    <h4 style="margin-bottom: 1rem;">Accesibilidad</h4>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--bg); border-radius: 12px; margin-bottom: 0.5rem;"><div><div style="font-weight: 600;">Alto Contraste</div><div style="font-size: 0.85rem; color: var(--text-light);">Mejora la visibilidad</div></div><label class="toggle-switch"><input type="checkbox" id="highContrastToggle" onchange="toggleHighContrast()"><span class="slider"></span></label></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--bg); border-radius: 12px;"><div><div style="font-weight: 600;">Texto Grande</div><div style="font-size: 0.85rem; color: var(--text-light);">Aumenta el tamaño del texto</div></div><label class="toggle-switch"><input type="checkbox" id="largeTextToggle" onchange="toggleLargeText()"><span class="slider"></span></label></div>
+                </div>
+                <div style="margin-bottom: 2rem;">
+                    <h4 style="margin-bottom: 1rem;">Notificaciones</h4>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--bg); border-radius: 12px; margin-bottom: 0.5rem;"><div><div style="font-weight: 600;">Recordatorios de práctica</div></div><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+                </div>
+                <button class="btn btn-secondary" onclick="logout()" style="width: 100%;">Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <!-- ===== SCREEN: ADMIN PANEL (Solo Admin) ===== -->
+        <div class="screen section-admin" id="screen-admin">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <div><h2>⚙️ Panel de Administración</h2><p style="color: var(--text-light);">Gestión de usuarios, contenido y sistema</p></div>
+                    <span class="role-badge role-admin">Admin</span>
+                </div>
+
+                <div class="admin-stats-grid">
+                    <div class="admin-stat-card blue">
+                        <div class="admin-stat-value" id="adminTotalUsers">3</div>
+                        <div class="admin-stat-label">Usuarios Registrados</div>
+                    </div>
+                    <div class="admin-stat-card green">
+                        <div class="admin-stat-value" id="adminActiveUsers">3</div>
+                        <div class="admin-stat-label">Usuarios Activos</div>
+                    </div>
+                    <div class="admin-stat-card orange">
+                        <div class="admin-stat-value" id="adminTotalSigns">10</div>
+                        <div class="admin-stat-label">Señas en Base</div>
+                    </div>
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-value" id="adminTotalProgress">0</div>
+                        <div class="admin-stat-label">Lecciones Completadas</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3>👥 Gestión de Usuarios</h3>
+                    <button class="btn btn-admin" onclick="showToast('Función disponible en backend', 'success')">+ Nuevo Usuario</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="data-table" id="adminUsersTable">
+                        <thead>
+                            <tr><th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Nivel</th><th>Estado</th><th>Acciones</th></tr>
+                        </thead>
+                        <tbody id="adminUsersBody">
+                            <!-- Se genera dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 1rem;">📝 Gestión de Contenido</h3>
+                <div class="tabs">
+                    <button class="tab active" onclick="switchAdminTab('signs')">Señas</button>
+                    <button class="tab" onclick="switchAdminTab('levels')">Niveles</button>
+                    <button class="tab" onclick="switchAdminTab('evaluations')">Evaluaciones</button>
+                </div>
+                <div id="admin-tab-signs">
+                    <p style="color: var(--text-light); margin-bottom: 1rem;">Administra el vocabulario LSN disponible en la plataforma.</p>
+                    <button class="btn btn-primary" onclick="showToast('Editor de señas - requiere backend', 'success')">+ Agregar Seña</button>
+                </div>
+                <div id="admin-tab-levels" style="display:none;">
+                    <p style="color: var(--text-light);">Configura los 5 niveles de aprendizaje y sus lecciones.</p>
+                </div>
+                <div id="admin-tab-evaluations" style="display:none;">
+                    <p style="color: var(--text-light);">Crea y edita evaluaciones para cada nivel.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 1rem;">⚡ Acciones del Sistema</h3>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-secondary" onclick="exportData()">📥 Exportar Datos</button>
+                    <button class="btn btn-secondary" onclick="showToast('Backup generado', 'success\)">💾 Backup Base de Datos</button>
+                    <button class="btn btn-danger" onclick="showToast('Función restringida', 'error')">🗑️ Limpiar Logs Antiguos</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SCREEN: AUDITOR PANEL (Solo Auditor) ===== -->
+        <div class="screen section-auditor" id="screen-auditor">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <div><h2>📊 Panel de Auditoría</h2><p style="color: var(--text-light);">Supervisión de actividad y reportes del sistema</p></div>
+                    <span class="role-badge role-auditor">Auditor</span>
+                </div>
+
+                <div class="admin-stats-grid">
+                    <div class="admin-stat-card" style="border-left-color: var(--auditor);">
+                        <div class="admin-stat-value" id="auditTotalLogs">0</div>
+                        <div class="admin-stat-label">Registros de Auditoría</div>
+                    </div>
+                    <div class="admin-stat-card blue">
+                        <div class="admin-stat-value" id="auditTotalUsers">3</div>
+                        <div class="admin-stat-label">Usuarios en Plataforma</div>
+                    </div>
+                    <div class="admin-stat-card green">
+                        <div class="admin-stat-value" id="auditActiveToday">0</div>
+                        <div class="admin-stat-label">Actividad Hoy</div>
+                    </div>
+                    <div class="admin-stat-card orange">
+                        <div class="admin-stat-value" id="auditAvgScore">0%</div>
+                        <div class="admin-stat-label">Promedio de Evaluaciones</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 1rem;">📋 Logs de Actividad Reciente</h3>
+                <div id="auditLogsContainer">
+                    <!-- Se genera dinámicamente -->
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 1rem;">📈 Reportes Disponibles</h3>
+                <div style="display: grid; gap: 1rem;">
+                    <div style="padding: 1rem; background: var(--bg); border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <div><strong>Progreso por Usuario</strong><p style="font-size: 0.85rem; color: var(--text-light);">Detalle de avance en cada nivel</p></div>
+                        <button class="btn btn-auditor" onclick="generateReport('progress')">Generar</button>
+                    </div>
+                    <div style="padding: 1rem; background: var(--bg); border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <div><strong>Resultados de Evaluaciones</strong><p style="font-size: 0.85rem; color: var(--text-light);">Puntajes y aprobaciones</p></div>
+                        <button class="btn btn-auditor" onclick="generateReport('evaluations')">Generar</button>
+                    </div>
+                    <div style="padding: 1rem; background: var(--bg); border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <div><strong>Actividad de Usuarios</strong><p style="font-size: 0.85rem; color: var(--text-light);">Inicios de sesión y acciones</p></div>
+                        <button class="btn btn-auditor" onclick="generateReport('activity')">Generar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer" id="mainFooter" style="display:none;">
+        <div class="footer-content">
+            <h3>Deaf and Mute</h3>
+            <p>Promoviendo la inclusión a través del Lenguaje de Señas Nicaragüense</p>
+            <div class="footer-links">
+                <a href="#">Términos</a>
+                <a href="#">Privacidad</a>
+                <a href="#">Contacto</a>
+                <a href="#">Ayuda</a>
+            </div>
+            <p style="margin-top: 2rem; opacity: 0.6; font-size: 0.9rem;">© 2026 Deaf and Mute. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <div class="modal-header"><h3 id="modalTitle">Título</h3><button class="modal-close" onclick="closeModal()">×</button></div>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ==================== SISTEMA DE ROLES Y PERMISOS ====================
+        const ROLES = {
+            ADMIN: { id: 1, name: 'Admin', key: 'admin', permissions: ['users_crud','content_crud','reports_read','audit_read','system_config'] },
+            USER: { id: 2, name: 'Usuario', key: 'user', permissions: ['content_read','progress_write','evaluations_take','profile_update'] },
+            AUDITOR: { id: 3, name: 'Auditor', key: 'auditor', permissions: ['users_read','reports_read','audit_read','logs_read'] }
+        };
+
+        const PERMISSIONS = {
+            users_crud: 'Crear, leer, actualizar y eliminar usuarios',
+            content_crud: 'Gestionar contenido educativo',
+            reports_read: 'Ver reportes y estadísticas',
+            audit_read: 'Ver registros de auditoría',
+            system_config: 'Configurar sistema',
+            content_read: 'Acceder a lecciones y señas',
+            progress_write: 'Registrar progreso de aprendizaje',
+            evaluations_take: 'Realizar evaluaciones',
+            profile_update: 'Actualizar perfil propio',
+            users_read: 'Ver lista de usuarios (solo lectura)',
+            logs_read: 'Ver logs de actividad'
+        };
+
+        // ==================== ESTADO DE LA APLICACIÓN ====================
+        let currentUser = null;
+        let userProgress = { currentLevel: 1, completedLessons: [], scores: {} };
+        let auditLogs = [];
+        let allUsers = [];
+
+        // Usuarios de demostración
+        const demoUsers = [
+            { id: 1, rol_id: 1, name: 'Administrador', apellido: 'Sistema', email: 'admin@deafmute.ni', password: 'admin', avatar: '👨‍💼', nivel_actual: 5, progreso_total: 100, activo: true, role: ROLES.ADMIN },
+            { id: 2, rol_id: 2, name: 'Estudiante', apellido: 'Prueba', email: 'estudiante@email.com', password: 'user', avatar: '👤', nivel_actual: 1, progreso_total: 0, activo: true, role: ROLES.USER },
+            { id: 3, rol_id: 3, name: 'Auditor', apellido: 'MINED', email: 'auditor@mined.ni', password: 'audit', avatar: '🔍', nivel_actual: 1, progreso_total: 0, activo: true, role: ROLES.AUDITOR }
+        ];
+
+        // ==================== FUNCIONES DE NAVEGACIÓN ====================
+        function showScreen(screenName) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const screen = document.getElementById(`screen-${screenName}`);
+            if (screen) { screen.classList.add('active'); window.scrollTo(0, 0); }
+
+            if (currentUser) {
+                document.getElementById('mainHeader').style.display = 'flex';
+                document.getElementById('mainFooter').style.display = 'block';
+                applyRoleVisibility();
+            } else {
+                document.getElementById('mainHeader').style.display = 'none';
+                document.getElementById('mainFooter').style.display = 'none';
+            }
+
+            if (screenName === 'home') updateHomeProgress();
+            if (screenName === 'levels') updateLevelsScreen();
+            if (screenName === 'gallery') loadGallery();
+            if (screenName === 'profile') updateProfileScreen();
+            if (screenName === 'admin') loadAdminPanel();
+            if (screenName === 'auditor') loadAuditorPanel();
+        }
+
+        // ==================== SISTEMA DE ROLES ====================
+        function applyRoleVisibility() {
+            document.body.classList.remove('is-admin', 'is-user', 'is-auditor');
+            if (!currentUser) return;
+
+            const roleKey = currentUser.role?.key || 'user';
+            document.body.classList.add(`is-${roleKey}`);
+
+            // Actualizar badge en header
+            const badge = document.getElementById('userRoleBadge');
+            if (badge) {
+                badge.textContent = currentUser.role?.name || 'Usuario';
+                badge.className = `role-badge role-${roleKey}`;
+            }
+        }
+
+        function hasPermission(permission) {
+            if (!currentUser || !currentUser.role) return false;
+            return currentUser.role.permissions.includes(permission);
+        }
+
+        function requirePermission(permission, callback) {
+            if (hasPermission(permission)) {
+                callback();
+            } else {
+                showToast('No tienes permiso para realizar esta acción', 'error');
+                logAudit('PERMISSION_DENIED', null, { permission, user: currentUser?.email });
+            }
+        }
+
+        // ==================== AUTENTICACIÓN ====================
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            // Buscar en usuarios demo
+            const user = demoUsers.find(u => u.email === email);
+            if (!user) {
+                showToast('Usuario no encontrado. Usa las cuentas de demo.', 'error');
+                return;
+            }
+
+            currentUser = { ...user };
+
+            // Cargar progreso guardado
+            const saved = localStorage.getItem(`lsnProgress_${currentUser.id}`);
+            if (saved) userProgress = JSON.parse(saved);
+
+            document.getElementById('userNameDisplay').textContent = currentUser.name;
+            applyRoleVisibility();
+
+            logAudit('LOGIN', 'users', { user_id: currentUser.id, email: currentUser.email });
+            showToast(`¡Bienvenido, ${currentUser.name}! [${currentUser.role.name}]`, 'success');
+            showScreen('home');
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const password = document.getElementById('regPassword').value;
+            const password2 = document.getElementById('regPassword2').value;
+            if (password !== password2) { showToast('Las contraseñas no coinciden', 'error'); return; }
+            if (!document.getElementById('acceptTerms').checked) { showToast('Debes aceptar los términos', 'error'); return; }
+
+            const roleId = parseInt(document.getElementById('regRole').value);
+            const role = Object.values(ROLES).find(r => r.id === roleId);
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+
+            const newUser = {
+                id: demoUsers.length + 1,
+                rol_id: roleId,
+                name: name,
+                apellido: document.getElementById('regLastName').value,
+                email: email,
+                password: password,
+                avatar: '👤',
+                nivel_actual: 1,
+                progreso_total: 0,
+                activo: true,
+                role: role
+            };
+
+            demoUsers.push(newUser);
+            currentUser = newUser;
+            userProgress = { currentLevel: 1, completedLessons: [], scores: {} };
+            saveProgress();
+
+            document.getElementById('userNameDisplay').textContent = currentUser.name;
+            applyRoleVisibility();
+
+            logAudit('USER_CREATED', 'users', { new_user_id: newUser.id, email: newUser.email, role: role.name });
+            showToast(`¡Cuenta creada! Rol: ${role.name}`, 'success');
+            showScreen('home');
+        }
+
+        function handleRecover(e) {
+            e.preventDefault();
+            showToast('Se ha enviado un enlace a tu correo', 'success');
+            showScreen('login');
+        }
+
+        function logout() {
+            if (currentUser) {
+                logAudit('LOGOUT', 'users', { user_id: currentUser.id });
+            }
+            currentUser = null;
+            userProgress = { currentLevel: 1, completedLessons: [], scores: {} };
+            document.body.classList.remove('is-admin', 'is-user', 'is-auditor');
+            showScreen('login');
+            showToast('Sesión cerrada', 'success');
+        }
+
+        function saveProgress() {
+            if (currentUser) {
+                localStorage.setItem(`lsnProgress_${currentUser.id}`, JSON.stringify(userProgress));
+            }
+        }
+
+        // ==================== AUDITORÍA ====================
+        function logAudit(action, table, details) {
+            const log = {
+                id: auditLogs.length + 1,
+                user_id: currentUser?.id || null,
+                user_name: currentUser?.name || 'Anónimo',
+                user_email: currentUser?.email || 'N/A',
+                user_role: currentUser?.role?.name || 'N/A',
+                accion: action,
+                tabla_afectada: table || 'system',
+                detalles: details,
+                ip_address: '127.0.0.1',
+                created_at: new Date().toISOString()
+            };
+            auditLogs.unshift(log);
+            localStorage.setItem('lsnAuditLogs', JSON.stringify(auditLogs));
+        }
+
+        // ==================== ADMIN PANEL ====================
+        function loadAdminPanel() {
+            if (!hasPermission('users_crud')) {
+                showToast('Acceso denegado. Se requiere rol Admin.', 'error');
+                showScreen('home');
+                return;
+            }
+
+            // Actualizar estadísticas
+            document.getElementById('adminTotalUsers').textContent = demoUsers.length;
+            document.getElementById('adminActiveUsers').textContent = demoUsers.filter(u => u.activo).length;
+            document.getElementById('adminTotalSigns').textContent = lsnDatabase.letters.length + Object.values(lsnDatabase.basicWords).flat().length;
+            document.getElementById('adminTotalProgress').textContent = userProgress.completedLessons.length;
+
+            // Renderizar tabla de usuarios
+            const tbody = document.getElementById('adminUsersBody');
+            tbody.innerHTML = demoUsers.map(u => `
+                <tr>
+                    <td>${u.id}</td>
+                    <td>${u.name} ${u.apellido}</td>
+                    <td>${u.email}</td>
+                    <td><span class="role-badge role-${u.role?.key || 'user'}">${u.role?.name || 'Usuario'}</span></td>
+                    <td>${u.nivel_actual}</td>
+                    <td><span class="status-dot ${u.activo ? 'status-active' : 'status-inactive'}"></span>${u.activo ? 'Activo' : 'Inactivo'}</td>
+                    <td>
+                        <button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="editUser(${u.id})">Editar</button>
+                        <button class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="toggleUserStatus(${u.id})">${u.activo ? 'Desactivar' : 'Activar'}</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function editUser(userId) {
+            requirePermission('users_crud', () => {
+                const user = demoUsers.find(u => u.id === userId);
+                showModal(`Editar Usuario #${userId}`, `
+                    <div class="form-group"><label>Nombre</label><input class="form-input" value="${user.name}" id="editName"></div>
+                    <div class="form-group"><label>Email</label><input class="form-input" value="${user.email}" id="editEmail"></div>
+                    <div class="form-group"><label>Rol</label><select class="form-input" id="editRole">
+                        <option value="1" ${user.rol_id===1?'selected':''}>Admin</option>
+                        <option value="2" ${user.rol_id===2?'selected':''}>Usuario</option>
+                        <option value="3" ${user.rol_id===3?'selected':''}>Auditor</option>
+                    </select></div>
+                    <button class="btn btn-primary" onclick="saveUserEdit(${userId})" style="width:100%">Guardar Cambios</button>
+                `);
+            });
+        }
+
+        function saveUserEdit(userId) {
+            const user = demoUsers.find(u => u.id === userId);
+            const oldData = { ...user };
+            user.name = document.getElementById('editName').value;
+            user.email = document.getElementById('editEmail').value;
+            const newRoleId = parseInt(document.getElementById('editRole').value);
+            user.rol_id = newRoleId;
+            user.role = Object.values(ROLES).find(r => r.id === newRoleId);
+
+            logAudit('USER_UPDATED', 'users', { user_id: userId, old: oldData, new: { name: user.name, email: user.email, role: user.role.name } });
+            closeModal();
+            loadAdminPanel();
+            showToast('Usuario actualizado', 'success');
+        }
+
+        function toggleUserStatus(userId) {
+            requirePermission('users_crud', () => {
+                const user = demoUsers.find(u => u.id === userId);
+                user.activo = !user.activo;
+                logAudit(user.activo ? 'USER_ACTIVATED' : 'USER_DEACTIVATED', 'users', { user_id: userId, email: user.email });
+                loadAdminPanel();
+                showToast(`Usuario ${user.activo ? 'activado' : 'desactivado'}`, 'success');
+            });
+        }
+
+        function switchAdminTab(tab) {
+            event.target.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            ['signs','levels','evaluations'].forEach(t => {
+                document.getElementById(`admin-tab-${t}`).style.display = t === tab ? 'block' : 'none';
+            });
+        }
+
+        function exportData() {
+            requirePermission('reports_read', () => {
+                const data = { users: demoUsers, progress: userProgress, audit: auditLogs };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `deaf_mute_export_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                logAudit('DATA_EXPORTED', 'system', { records: demoUsers.length });
+                showToast('Datos exportados correctamente', 'success');
+            });
+        }
+
+        // ==================== AUDITOR PANEL ====================
+        function loadAuditorPanel() {
+            if (!hasPermission('audit_read')) {
+                showToast('Acceso denegado. Se requiere rol Auditor.', 'error');
+                showScreen('home');
+                return;
+            }
+
+            const savedLogs = localStorage.getItem('lsnAuditLogs');
+            if (savedLogs) auditLogs = JSON.parse(savedLogs);
+
+            document.getElementById('auditTotalLogs').textContent = auditLogs.length;
+            document.getElementById('auditTotalUsers').textContent = demoUsers.length;
+            document.getElementById('auditActiveToday').textContent = auditLogs.filter(l => 
+                new Date(l.created_at).toDateString() === new Date().toDateString()
+            ).length;
+
+            const scores = Object.values(userProgress.scores || {});
+            const avg = scores.length > 0 ? Math.round(scores.reduce((a,b) => a+b, 0) / scores.length) : 0;
+            document.getElementById('auditAvgScore').textContent = avg + '%';
+
+            // Renderizar logs
+            const container = document.getElementById('auditLogsContainer');
+            if (auditLogs.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-light); text-align: center;">No hay registros de auditoría aún.</p>';
+                return;
+            }
+
+            container.innerHTML = auditLogs.slice(0, 20).map(log => `
+                <div class="auditor-log-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="auditor-log-action">${log.accion}</span>
+                        <span class="auditor-log-time">${new Date(log.created_at).toLocaleString('es-NI')}</span>
+                    </div>
+                    <div class="auditor-log-detail">
+                        Usuario: <strong>${log.user_name}</strong> (${log.user_role}) | 
+                        Tabla: ${log.tabla_afectada}
+                        ${log.detalles?.permission ? `| Permiso denegado: ${log.detalles.permission}` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function generateReport(type) {
+            requirePermission('reports_read', () => {
+                let content = '';
+                if (type === 'progress') {
+                    content = `REPORTE DE PROGRESO\n===================\n\nUsuario: ${currentUser.name}\nNivel Actual: ${userProgress.currentLevel}\nLecciones Completadas: ${userProgress.completedLessons.length}\n\nDetalle: ${JSON.stringify(userProgress, null, 2)}`;
+                } else if (type === 'evaluations') {
+                    content = `REPORTE DE EVALUACIONES\n=======================\n\n${Object.entries(userProgress.scores).map(([k,v]) => `${k}: ${v}%`).join('\n')}`;
+                } else {
+                    content = `REPORTE DE ACTIVIDAD\n====================\n\nTotal logs: ${auditLogs.length}\nÚltimas acciones: ${auditLogs.slice(0,5).map(l => l.accion).join(', ')}`;
+                }
+
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `reporte_${type}_${new Date().toISOString().split('T')[0]}.txt`;
+                a.click();
+
+                logAudit('REPORT_GENERATED', 'system', { type, generated_by: currentUser.email });
+                showToast('Reporte generado y descargado', 'success');
+            });
+        }
+
+        // ==================== BASE DE DATOS LSN ====================
+        const lsnDatabase = {
+            letters: [
+                { char: 'A', sign: '👊', desc: 'Puño cerrado, pulgar al lado' },
+                { char: 'B', sign: '✋', desc: 'Palma abierta, dedos juntos' },
+                { char: 'C', sign: '🤏', desc: 'Forma de C con los dedos' },
+                { char: 'D', sign: '👆', desc: 'Índice arriba, otros dedos cerrados' },
+                { char: 'E', sign: '✊', desc: 'Dedos doblados, pulgar cruzado' },
+                { char: 'F', sign: '🤞', desc: 'Índice y pulgar forman círculo' },
+                { char: 'G', sign: '👉', desc: 'Índice apuntando, pulgar extendido' },
+                { char: 'H', sign: '✌️', desc: 'Índice y medio extendidos juntos' },
+                { char: 'I', sign: '🤙', desc: 'Meñique extendido solo' },
+                { char: 'J', sign: '🤙', desc: 'Meñique dibujando J' },
+                { char: 'K', sign: '✌️', desc: 'Índice y medio en V, pulgar en medio' },
+                { char: 'L', sign: '🤘', desc: 'Índice y pulgar en L' },
+                { char: 'M', sign: '🫵', desc: 'Tres dedos sobre el pulgar' },
+                { char: 'N', sign: '🫵', desc: 'Dos dedos sobre el pulgar' },
+                { char: 'O', sign: '👌', desc: 'Forma de O con los dedos' },
+                { char: 'P', sign: '👇', desc: 'K invertido, apuntando abajo' },
+                { char: 'Q', sign: '👇', desc: 'Índice y pulgar apuntando abajo' },
+                { char: 'R', sign: '🤞', desc: 'Índice y medio cruzados' },
+                { char: 'S', sign: '✊', desc: 'Puño cerrado' },
+                { char: 'T', sign: '👉', desc: 'Puño con pulgar entre índice y medio' },
+                { char: 'U', sign: '🤘', desc: 'Índice y medio juntos arriba' },
+                { char: 'V', sign: '✌️', desc: 'Índice y medio en V' },
+                { char: 'W', sign: '👆', desc: 'Tres dedos extendidos' },
+                { char: 'X', sign: '☝️', desc: 'Índice doblado en gancho' },
+                { char: 'Y', sign: '🤙', desc: 'Meñique y pulgar extendidos' },
+                { char: 'Z', sign: '☝️', desc: 'Índice dibujando Z' }
+            ],
+            basicWords: {
+                greetings: [
+                    { word: 'Hola', sign: '✌️👌🤘✊', category: 'Saludos' },
+                    { word: 'Adiós', sign: '✊☝️🤙👌✊', category: 'Saludos' },
+                    { word: 'Buenos días', sign: '🖐️🤘✋🫵👌✊☝️🤙✊✊', category: 'Saludos' }
+                ],
+                family: [
+                    { word: 'Mamá', sign: '🫵✊🫵✊', category: 'Familia' },
+                    { word: 'Papá', sign: '👇✊👇✊', category: 'Familia' },
+                    { word: 'Hermano', sign: '✌️✋🤞🫵✊🫵👌', category: 'Familia' }
+                ],
+                colors: [
+                    { word: 'Rojo', sign: '🔴🤞👌🤙👌', category: 'Colores' },
+                    { word: 'Azul', sign: '🔵✊☝️🤘🤘', category: 'Colores' },
+                    { word: 'Verde', sign: '🟢✌️✋🤞☝️✋', category: 'Colores' }
+                ],
+                numbers: [
+                    { word: '1', sign: '🤘🫵👌', category: 'Números' },
+                    { word: '2', sign: '☝️👌✊', category: 'Números' },
+                    { word: '3', sign: '👉🤞✋✊', category: 'Números' }
+                ],
+                days: [
+                    { word: 'Lunes', sign: '🤘🤘🫵✋✊', category: 'Días' },
+                    { word: 'Martes', sign: '🫵✊🤞👉✋✊', category: 'Días' }
+                ]
+            },
+            phrases: [
+                { phrase: '¿Cómo estás?', sign: '¿🤔?', context: 'Saludo inicial' },
+                { phrase: 'Mucho gusto', sign: '🤝', context: 'Presentación' },
+                { phrase: 'Gracias', sign: '🙏', context: 'Agradecimiento' },
+                { phrase: 'Por favor', sign: '🙏➡️', context: 'Cortesía' },
+                { phrase: 'Buenos días', sign: '🌅👋', context: 'Saludo mañana' }
+            ],
+            conversations: [
+                {
+                    title: 'Presentación Personal', context: 'Escuela',
+                    dialog: [
+                        { speaker: 'A', text: 'Hola, mucho gusto. Me llamo Carlos.', sign: '👋🤝👤' },
+                        { speaker: 'B', text: 'Igualmente. Yo soy María. ¿Cómo estás?', sign: '🤝👩¿🤔?' },
+                        { speaker: 'A', text: 'Bien, gracias. ¿Y tú?', sign: '👍🙏¿🤔?' }
+                    ]
+                }
+            ],
+            stories: [
+                {
+                    title: 'La Mañana de Ana',
+                    scenes: [
+                        { text: 'Ana se despierta temprano. Son las seis de la mañana.', sign: '👧⏰6️⃣' },
+                        { text: 'Se lava la cara y se viste para ir a la escuela.', sign: '🧼👗🏫' }
+                    ]
+                }
+            ]
+        };
+
+        // ==================== SISTEMA DE NIVELES ====================
+        function updateLevelsScreen() {
+            for (let i = 1; i <= 5; i++) {
+                const card = document.getElementById(`level${i}Card`);
+                const badge = document.getElementById(`badge${i}`);
+                const progressBar = document.getElementById(`progress${i}`);
+                card.classList.remove('locked', 'active', 'completed');
+                if (i < userProgress.currentLevel) {
+                    card.classList.add('completed');
+                    if (badge) badge.style.display = 'inline-block';
+                    progressBar.style.width = '100%';
+                } else if (i === userProgress.currentLevel) {
+                    card.classList.add('active');
+                    if (badge) badge.style.display = 'none';
+                    const progress = calculateLevelProgress(i);
+                    progressBar.style.width = `${progress}%`;
+                } else {
+                    card.classList.add('locked');
+                    if (badge) badge.style.display = 'none';
+                    progressBar.style.width = '0%';
+                }
+            }
+        }
+
+        function calculateLevelProgress(level) {
+            const counts = { 1: 26, 2: 23, 3: 8, 4: 3, 5: 2 };
+            const lessonsInLevel = counts[level] || 5;
+            const completed = userProgress.completedLessons.filter(l => l.startsWith(`level${level}`)).length;
+            return lessonsInLevel > 0 ? (completed / lessonsInLevel) * 100 : 0;
+        }
+
+        function startLevel(level) {
+            if (level > userProgress.currentLevel) {
+                showToast('Completa el nivel anterior primero', 'error');
+                return;
+            }
+            showScreen('level-content');
+            loadLevelContent(level);
+        }
+
+        let currentLevelData = null;
+        let currentLessonIndex = 0;
+
+        function loadLevelContent(level) {
+            currentLevelData = level;
+            currentLessonIndex = 0;
+            const titles = { 1: 'Nivel 1: Abecedario', 2: 'Nivel 2: Palabras Básicas', 3: 'Nivel 3: Frases Básicas', 4: 'Nivel 4: Conversaciones', 5: 'Nivel 5: Historias y Situaciones' };
+            const subtitles = { 1: 'Aprende las 26 letras del abecedario en LSN', 2: 'Saludos, familia, colores, números y días', 3: 'Frases esenciales para la comunicación diaria', 4: 'Diálogos completos en diferentes contextos', 5: 'Narrativas y situaciones de la vida real' };
+            document.getElementById('levelTitle').textContent = titles[level];
+            document.getElementById('levelSubtitle').textContent = subtitles[level];
+            switchTab('theory');
+            updateLevelProgressBar();
+        }
+
+        function updateLevelProgressBar() {
+            const progress = calculateLevelProgress(currentLevelData);
+            document.getElementById('levelContentProgress').style.width = `${progress}%`;
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('#levelTabs .tab').forEach(t => t.classList.remove('active'));
+            if (event && event.target) event.target.classList.add('active');
+            else document.querySelector(`#levelTabs .tab:nth-child(${tabName==='theory'?1:tabName==='practice'?2:3})`).classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+            document.getElementById(`tab-${tabName}`).style.display = 'block';
+            if (tabName === 'theory') loadTheoryContent();
+            if (tabName === 'practice') loadPracticeContent();
+            if (tabName === 'evaluation') loadEvaluationContent();
+        }
+
+        // ==================== CONTENIDO TEÓRICO ====================
+        function loadTheoryContent() {
+            const container = document.getElementById('theoryContent');
+            container.innerHTML = '';
+            if (currentLevelData === 1) {
+                container.innerHTML = `<h3>El Abecedario en LSN</h3><p style="margin: 1rem 0; color: var(--text-light);">El Lenguaje de Señas Nicaragüense utiliza el alfabeto manual para deletrear nombres propios y palabras que no tienen signo específico.</p><div class="gallery-grid" style="margin-top: 1.5rem;">${lsnDatabase.letters.map((letter, idx) => `<div class="gallery-item" onclick="showLetterDetail(${idx})"><div class="gallery-item-image" style="font-size: 4rem;">${letter.sign}</div><div class="gallery-item-info" style="text-align: center;"><strong style="font-size: 1.25rem;">${letter.char}</strong><p style="font-size: 0.85rem; color: var(--text-light);">${letter.desc}</p></div></div>`).join('')}</div>`;
+            } else if (currentLevelData === 2) {
+                let html = '<h3>Palabras Básicas en LSN</h3>';
+                Object.entries(lsnDatabase.basicWords).forEach(([category, words]) => {
+                    html += `<div style="margin-top: 2rem;"><h4 style="text-transform: capitalize; margin-bottom: 1rem;">${category}</h4><div class="gallery-grid">${words.map((word, idx) => `<div class="gallery-item" onclick="showWordDetail('${category}', ${idx})"><div class="gallery-item-image" style="font-size: 3rem;">${word.sign}</div><div class="gallery-item-info" style="text-align: center;"><strong>${word.word}</strong></div></div>`).join('')}</div></div>`;
+                });
+                container.innerHTML = html;
+            } else if (currentLevelData === 3) {
+                container.innerHTML = `<h3>Frases Básicas en LSN</h3><p style="margin: 1rem 0; color: var(--text-light);">Estas frases son esenciales para la comunicación diaria.</p><div style="margin-top: 1.5rem;">${lsnDatabase.phrases.map((phrase, idx) => `<div class="story-scene" style="cursor: pointer;" onclick="playPhrase(${idx})"><div style="display: flex; justify-content: space-between; align-items: center;"><div><strong style="font-size: 1.1rem;">${phrase.phrase}</strong><p style="color: var(--text-light); font-size: 0.9rem; margin-top: 0.25rem;">${phrase.context}</p></div><div style="font-size: 3rem;">${phrase.sign}</div></div><div class="audio-player" style="margin-top: 1rem;"><button class="play-btn" onclick="event.stopPropagation(); playAudio('${phrase.phrase}')">▶</button><div class="audio-wave"></div><span style="font-size: 0.85rem; color: var(--text-light);">Escuchar pronunciación</span></div></div>`).join('')}</div>`;
+            } else if (currentLevelData === 4) {
+                container.innerHTML = `<h3>Conversaciones en LSN</h3><p style="margin: 1rem 0; color: var(--text-light);">Observa cómo se desarrollan diálogos completos.</p>${lsnDatabase.conversations.map((conv, idx) => `<div class="card" style="margin-top: 1.5rem;"><h4>${conv.title} <span class="role-badge role-primary">${conv.context}</span></h4><div class="chat-container" style="margin-top: 1rem;">${conv.dialog.map(d => `<div class="chat-bubble ${d.speaker === 'A' || d.speaker === 'Cliente' || d.speaker === 'Hijo' ? 'chat-left' : 'chat-right'}"><strong>${d.speaker}:</strong> ${d.text}<div style="margin-top: 0.5rem; font-size: 1.5rem; opacity: 0.8;">${d.sign}</div></div>`).join('')}</div></div>`).join('')}`;
+            } else if (currentLevelData === 5) {
+                container.innerHTML = `<h3>Historias y Situaciones Cotidianas</h3><p style="margin: 1rem 0; color: var(--text-light);">Comprende el LSN en contextos narrativos.</p>${lsnDatabase.stories.map((story, idx) => `<div class="story-card"><div class="story-title">📖 ${story.title}</div>${story.scenes.map((scene, sidx) => `<div class="story-scene"><p class="story-content">${scene.text}</p><div style="font-size: 2rem; margin-top: 0.5rem; text-align: center;">${scene.sign}</div></div>`).join('')}</div>`).join('')}`;
+            }
+        }
+
+        function showLetterDetail(idx) {
+            const letter = lsnDatabase.letters[idx];
+            showModal(`Letra ${letter.char}`, `<div style="text-align: center;"><div style="font-size: 8rem; margin: 1rem 0;">${letter.sign}</div><h3>Letra ${letter.char}</h3><p style="margin: 1rem 0; color: var(--text-light);">${letter.desc}</p><div class="audio-player"><button class="play-btn" onclick="playAudio('Letra ${letter.char}')">▶</button><div class="audio-wave"></div><span>Pronunciación: /${letter.char.toLowerCase()}/</span></div></div>`);
+        }
+
+        function showWordDetail(category, idx) {
+            const word = lsnDatabase.basicWords[category][idx];
+            showModal(word.word, `<div style="text-align: center;"><div style="font-size: 6rem; margin: 1rem 0;">${word.sign}</div><h3>${word.word}</h3><span class="role-badge role-primary">${word.category}</span><div class="audio-player" style="margin-top: 1rem;"><button class="play-btn" onclick="playAudio('${word.word}')">▶</button><div class="audio-wave"></div></div></div>`);
+        }
+
+        function playPhrase(idx) { showToast(`Reproduciendo: ${lsnDatabase.phrases[idx].phrase}`, 'success'); }
+
+        function playAudio(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-NI';
+                speechSynthesis.speak(utterance);
+            } else { showToast('Reproduciendo audio...', 'success'); }
+        }
+
+        // ==================== PRÁCTICA ====================
+        let currentQuiz = null;
+        let quizScore = 0;
+
+        function loadPracticeContent() {
+            const container = document.getElementById('practiceContent');
+            if (currentLevelData === 1) {
+                const randomLetters = [...lsnDatabase.letters].sort(() => Math.random() - 0.5).slice(0, 5);
+                currentQuiz = { type: 'letters', questions: randomLetters.map(l => ({ question: `¿Qué letra representa esta seña? ${l.sign}`, options: generateLetterOptions(l.char), correct: l.char })) };
+            } else if (currentLevelData === 2) {
+                const allWords = Object.values(lsnDatabase.basicWords).flat();
+                const randomWords = [...allWords].sort(() => Math.random() - 0.5).slice(0, 5);
+                currentQuiz = { type: 'words', questions: randomWords.map(w => ({ question: `¿Qué palabra es esta? ${w.sign}`, options: generateWordOptions(w.word, allWords), correct: w.word })) };
+            } else {
+                container.innerHTML = `<div style="text-align: center; padding: 3rem;"><div style="font-size: 4rem; margin-bottom: 1rem;">🎯</div><h3>Práctica Interactiva</h3><p style="color: var(--text-light); margin: 1rem 0;">Selecciona la respuesta correcta para cada pregunta.</p><button class="btn btn-primary" onclick="startPractice()">Comenzar Práctica</button></div>`;
+                return;
+            }
+            renderQuiz(container);
+        }
+
+        function generateLetterOptions(correct) {
+            const others = lsnDatabase.letters.filter(l => l.char !== correct).sort(() => Math.random() - 0.5).slice(0, 3).map(l => l.char);
+            return [...others, correct].sort(() => Math.random() - 0.5);
+        }
+
+        function generateWordOptions(correct, allWords) {
+            const others = allWords.filter(w => w.word !== correct).sort(() => Math.random() - 0.5).slice(0, 3).map(w => w.word);
+            return [...others, correct].sort(() => Math.random() - 0.5);
+        }
+
+        function renderQuiz(container) {
+            quizScore = 0;
+            let currentQ = 0;
+            function renderQuestion() {
+                if (currentQ >= currentQuiz.questions.length) {
+                    const pct = Math.round((quizScore / currentQuiz.questions.length) * 100);
+                    container.innerHTML = `<div style="text-align: center; padding: 2rem;"><h3>¡Práctica completada!</h3><div class="score-circle" style="--score: ${pct}"><div class="score-text">${pct}%</div></div><p>Respondiste correctamente ${quizScore} de ${currentQuiz.questions.length}</p><button class="btn btn-primary" onclick="loadPracticeContent()" style="margin-top: 1rem;">Intentar de nuevo</button></div>`;
+                    if (quizScore >= currentQuiz.questions.length * 0.7) {
+                        markLessonComplete(`level${currentLevelData}_practice`);
+                    }
+                    return;
+                }
+                const q = currentQuiz.questions[currentQ];
+                container.innerHTML = `<div style="margin-bottom: 1rem;"><span style="color: var(--text-light);">Pregunta ${currentQ + 1} de ${currentQuiz.questions.length}</span></div><h3 style="margin-bottom: 1.5rem; font-size: 1.5rem;">${q.question}</h3><div class="activity-container">${q.options.map(opt => `<button class="quiz-option" onclick="checkAnswer(this, '${opt}', '${q.correct}')">${opt}</button>`).join('')}</div>`;
+            }
+            window.checkAnswer = function(btn, selected, correct) {
+                const buttons = container.querySelectorAll('.quiz-option');
+                buttons.forEach(b => { b.disabled = true; if (b.textContent.trim() === correct) b.classList.add('correct'); });
+                if (selected === correct) { quizScore++; btn.classList.add('correct'); showToast('¡Correcto! 🎉', 'success'); }
+                else { btn.classList.add('incorrect'); showToast('Incorrecto. La respuesta correcta es: ' + correct, 'error'); }
+                setTimeout(() => { currentQ++; renderQuestion(); }, 1500);
+            };
+            renderQuestion();
+        }
+
+        function startPractice() { loadPracticeContent(); }
+
+        // ==================== EVALUACIÓN ====================
+        function loadEvaluationContent() {
+            const container = document.getElementById('evaluationContent');
+            const evalKey = `level${currentLevelData}_eval`;
+            if (userProgress.completedLessons.includes(evalKey)) {
+                const score = userProgress.scores[evalKey] || 0;
+                container.innerHTML = `<div style="text-align: center; padding: 2rem;"><h3>Evaluación Completada</h3><div class="score-circle" style="--score: ${score}"><div class="score-text">${score}%</div></div><p>Ya has completado esta evaluación.</p><button class="btn btn-primary" onclick="restartEvaluation()">Repetir Evaluación</button></div>`;
+                return;
+            }
+            container.innerHTML = `<div style="text-align: center; padding: 2rem;"><div style="font-size: 4rem; margin-bottom: 1rem;">📝</div><h3>Evaluación Final</h3><p style="color: var(--text-light); margin: 1rem 0;">Esta evaluación pondrá a prueba tus conocimientos del Nivel ${currentLevelData}. Necesitas al menos 70% para aprobar y desbloquear el siguiente nivel.</p><button class="btn btn-primary btn-large" onclick="startEvaluation()">Comenzar Evaluación</button></div>`;
+        }
+
+        function startEvaluation() {
+            const container = document.getElementById('evaluationContent');
+            let questions = [];
+            if (currentLevelData === 1) {
+                const randomLetters = [...lsnDatabase.letters].sort(() => Math.random() - 0.5).slice(0, 10);
+                questions = randomLetters.map(l => ({ question: `¿Qué letra es esta? ${l.sign}`, options: generateLetterOptions(l.char), correct: l.char }));
+            } else if (currentLevelData === 2) {
+                const allWords = Object.values(lsnDatabase.basicWords).flat();
+                const randomWords = [...allWords].sort(() => Math.random() - 0.5).slice(0, 10);
+                questions = randomWords.map(w => ({ question: `¿Qué palabra representa esta seña? ${w.sign}`, options: generateWordOptions(w.word, allWords), correct: w.word }));
+            } else {
+                questions = [
+                    { question: '¿Cómo se dice "Hola" en LSN?', options: ['👋', '✋', '👊', '✌️'], correct: '👋' },
+                    { question: '¿Qué significa esta seña? 🙏', options: ['Gracias', 'Por favor', 'Hola', 'Adiós'], correct: 'Gracias' },
+                    { question: '¿Cómo se saluda en la mañana?', options: ['🌙', '☀️', '🌅', '⭐'], correct: '🌅' }
+                ];
+            }
+            let currentQ = 0;
+            let score = 0;
+            function renderEvalQuestion() {
+                if (currentQ >= questions.length) {
+                    const percentage = Math.round((score / questions.length) * 100);
+                    const passed = percentage >= 70;
+                    container.innerHTML = `<div style="text-align: center; padding: 2rem;"><h3>${passed ? '¡Felicitaciones! 🎉' : 'Evaluación Completada'}</h3><div class="score-circle" style="--score: ${percentage}"><div class="score-text">${percentage}%</div></div><p>${passed ? '¡Has aprobado! Has desbloqueado el siguiente nivel.' : 'Necesitas al menos 70% para aprobar. Intenta de nuevo.'}</p>${passed ? createConfetti() : ''}<button class="btn btn-primary" onclick="${passed ? 'unlockNextLevel()' : 'restartEvaluation()'}" style="margin-top: 1rem;">${passed ? 'Continuar' : 'Intentar de nuevo'}</button></div>`;
+                    if (passed) {
+                        const evalKey = `level${currentLevelData}_eval`;
+                        userProgress.scores[evalKey] = percentage;
+                        markLessonComplete(evalKey);
+                    }
+                    return;
+                }
+                const q = questions[currentQ];
+                container.innerHTML = `<div style="margin-bottom: 1rem;"><span style="color: var(--text-light);">Pregunta ${currentQ + 1} de ${questions.length}</span><div class="level-progress" style="margin-top: 0.5rem;"><div class="level-progress-bar" style="width: ${(currentQ / questions.length) * 100}%"></div></div></div><h3 style="margin-bottom: 1.5rem; font-size: 1.5rem;">${q.question}</h3><div class="activity-container">${q.options.map(opt => `<button class="quiz-option" onclick="checkEvalAnswer(this, '${opt}', '${q.correct}')">${opt}</button>`).join('')}</div>`;
+            }
+            window.checkEvalAnswer = function(btn, selected, correct) {
+                const buttons = container.querySelectorAll('.quiz-option');
+                buttons.forEach(b => { b.disabled = true; if (b.textContent.trim() === correct) b.classList.add('correct'); });
+                if (selected === correct) { score++; btn.classList.add('correct'); showToast('¡Correcto!', 'success'); }
+                else { btn.classList.add('incorrect'); showToast('Incorrecto', 'error'); }
+                setTimeout(() => { currentQ++; renderEvalQuestion(); }, 1200);
+            };
+            renderEvalQuestion();
+        }
+
+        function restartEvaluation() { loadEvaluationContent(); }
+
+        function unlockNextLevel() {
+            if (userProgress.currentLevel < 5) {
+                userProgress.currentLevel++;
+                saveProgress();
+                logAudit('LEVEL_UNLOCKED', 'progress', { new_level: userProgress.currentLevel, user_id: currentUser.id });
+                showToast(`¡Nivel ${userProgress.currentLevel} desbloqueado!`, 'success');
+                showScreen('levels');
+            } else {
+                showToast('¡Has completado todos los niveles! 🏆', 'success');
+                showScreen('home');
+            }
+        }
+
+        function markLessonComplete(lessonId) {
+            if (!userProgress.completedLessons.includes(lessonId)) {
+                userProgress.completedLessons.push(lessonId);
+                saveProgress();
+                updateHomeProgress();
+            }
+        }
+
+        // ==================== GALERÍA ====================
+        function loadGallery() {
+            const grid = document.getElementById('galleryGrid');
+            let items = [];
+            lsnDatabase.letters.forEach(l => items.push({ type: 'letters', sign: l.sign, label: `Letra ${l.char}`, desc: l.desc }));
+            Object.values(lsnDatabase.basicWords).flat().forEach(w => items.push({ type: 'words', sign: w.sign, label: w.word, desc: w.category }));
+            lsnDatabase.phrases.forEach(p => items.push({ type: 'phrases', sign: p.sign, label: p.phrase, desc: p.context }));
+            renderGalleryItems(items);
+        }
+
+        function renderGalleryItems(items) {
+            const grid = document.getElementById('galleryGrid');
+            grid.innerHTML = items.map(item => `<div class="gallery-item" data-type="${item.type}"><div class="gallery-item-image" style="font-size: 3rem;">${item.sign}</div><div class="gallery-item-info"><strong>${item.label}</strong><p style="font-size: 0.85rem; color: var(--text-light);">${item.desc}</p></div></div>`).join('');
+        }
+
+        function filterGallery(type) {
+            event.target.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.gallery-item').forEach(item => {
+                item.style.display = (type === 'all' || item.dataset.type === type) ? 'block' : 'none';
+            });
+        }
+
+        // ==================== PERFIL ====================
+        function updateProfileScreen() {
+            if (!currentUser) return;
+            document.getElementById('profileName').textContent = currentUser.name;
+            document.getElementById('profileNameInput').value = currentUser.name;
+            document.getElementById('profileEmailInput').value = currentUser.email;
+            document.getElementById('statLevel').textContent = userProgress.currentLevel;
+            const badge = document.getElementById('profileRoleBadge');
+            if (badge) {
+                badge.textContent = currentUser.role?.name || 'Usuario';
+                badge.className = `role-badge role-${currentUser.role?.key || 'user'}`;
+            }
+            const totalLessons = 64;
+            const completed = userProgress.completedLessons.length;
+            const percent = Math.round((completed / totalLessons) * 100);
+            document.getElementById('statProgress').textContent = `${percent}%`;
+            document.getElementById('statCompleted').textContent = completed;
+        }
+
+        function updateProfile(e) {
+            e.preventDefault();
+            currentUser.name = document.getElementById('profileNameInput').value;
+            currentUser.email = document.getElementById('profileEmailInput').value;
+            document.getElementById('userNameDisplay').textContent = currentUser.name;
+            logAudit('PROFILE_UPDATED', 'users', { user_id: currentUser.id });
+            showToast('Perfil actualizado', 'success');
+        }
+
+        // ==================== HOME ====================
+        function updateHomeProgress() {
+            const totalLessons = 64;
+            const completed = userProgress.completedLessons.length;
+            const percent = Math.round((completed / totalLessons) * 100);
+            document.getElementById('currentLevelDisplay').textContent = userProgress.currentLevel;
+            document.getElementById('progressPercent').textContent = `${percent}%`;
+            document.getElementById('mainProgressBar').style.width = `${percent}%`;
+            document.getElementById('mainProgressBar').textContent = `${percent}%`;
+            for (let i = 2; i <= 3; i++) {
+                const card = document.getElementById(`homeLevel${i}`);
+                if (card) {
+                    if (i <= userProgress.currentLevel) {
+                        card.classList.remove('locked');
+                        card.classList.add(i === userProgress.currentLevel ? 'active' : 'completed');
+                    }
+                }
+            }
+        }
+
+        // ==================== UTILIDADES ====================
+        function showToast(message, type = '') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function showModal(title, content) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() { document.getElementById('modal').classList.remove('active'); }
+
+        function toggleAccordion(element) {
+            element.classList.toggle('open');
+            const body = element.querySelector('.accordion-body');
+            body.classList.toggle('open');
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+
+        function toggleHighContrast() { document.body.classList.toggle('high-contrast'); }
+
+        function toggleLargeText() { document.body.style.fontSize = document.getElementById('largeTextToggle').checked ? '1.2rem' : ''; }
+
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = ['#7dd3c0', '#88d8b0', '#a8e6cf', '#52c41a', '#faad14'][Math.floor(Math.random() * 5)];
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        // ==================== INICIALIZACIÓN ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLogs = localStorage.getItem('lsnAuditLogs');
+            if (savedLogs) auditLogs = JSON.parse(savedLogs);
+            showScreen('login');
+            document.getElementById('modal').addEventListener('click', (e) => { if (e.target === document.getElementById('modal')) closeModal(); });
+        });
+    </script>
+</body>
+</html>
