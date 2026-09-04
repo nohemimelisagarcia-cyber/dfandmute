@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deaf and Mute - Aprende LSN</title>
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7dd3c0">
+<link rel="apple-touch-icon" href="logo1.jpeg">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
@@ -267,15 +270,24 @@
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
     </style>
 </head>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('Service Worker registrado con éxito', reg))
+        .catch(err => console.error('Error al registrar el Service Worker', err));
+    });
+  }
+</script>
 <body>
 
     <!-- Header -->
     <header class="header" id="mainHeader" style="display:none;">
         <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
         <a class="logo" onclick="showScreen('home')">
-            <div class="logo-icon">🤟</div>
-            <span>Deaf and Mute</span>
-        </a>
+    <img src="logo1.jpeg" alt="Logo Deaf and Mute" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid white;">
+    <span>Deaf and Mute</span>
+</a>
         <nav class="nav-menu">
             <a class="nav-link" onclick="showScreen('home')">Inicio</a>
             <a class="nav-link" onclick="showScreen('levels')">Niveles</a>
@@ -319,11 +331,10 @@
         <div class="screen active" id="screen-login">
             <div class="card" style="max-width: 500px; margin: 4rem auto;">
                 <div style="text-align: center; margin-bottom: 2rem;">
-                    <div class="logo-icon" style="width: 80px; height: 80px; font-size: 2.5rem; margin: 0 auto 1rem;">🤟</div>
+                    <img src="logo1.jpeg" alt="Logo Deaf and Mute" style="width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 1rem; display: block; object-fit: cover; box-shadow: 0 4px 15px rgba(125, 211, 192, 0.4);">
                     <h1 style="color: var(--primary-dark);">Deaf and Mute</h1>
                     <p style="color: var(--text-light);">Aprende Lenguaje de Señas Nicaragüense</p>
                 </div>
-
                 <form id="loginForm" onsubmit="handleLogin(event)">
                     <div class="form-group">
                         <label class="form-label">Correo electrónico</label>
@@ -409,9 +420,12 @@
         </div>
 
         <!-- SCREEN: Home -->
-        <div class="screen" id="screen-home">
+      <div class="screen" id="screen-home">
             <div class="hero">
-                <h1>🤟 Aprende LSN</h1>
+                <h1 style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                    <img src="logo1.jpeg" alt="Logo LSN" style="width: 55px; height: 55px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                    Aprende LSN
+                </h1>
                 <p>Domina el Lenguaje de Señas Nicaragüense de forma interactiva, divertida y accesible para todos.</p>
                 <button class="btn btn-primary btn-large" onclick="showScreen('levels')">Comenzar a Aprender →</button>
                 <div class="hero-stats">

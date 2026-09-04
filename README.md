@@ -35,7 +35,7 @@
 ### Opción 2: Servidor local con Python
 ```bash
 # Navega a la carpeta del proyecto
-cd deaf-and-mute
+cd dfanmute
 
 # Python 3
 python -m http.server 8000
