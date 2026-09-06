@@ -268,6 +268,35 @@
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg); }
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+        
+        /* Estilo personalizado para el botón de salir en Escritorio */
+.btn-logout-desktop {
+    background: rgba(255, 77, 79, 0.2);
+    color: #ff4d4f;
+    border: 1px solid #ff4d4f;
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-logout-desktop:hover {
+    background: #ff4d4f;
+    color: white;
+}
+
+/* Asegurar que la barra de navegación tenga espacio en computadoras */
+@media (min-width: 769px) {
+    .nav-menu {
+        display: flex !important;
+        align-items: center;
+        gap: 1.2rem;
+    }
+}
     </style>
 </head>
 <script>
@@ -295,34 +324,34 @@
 </script>
 <body>
 
-    <!-- Header -->
 <!-- Header -->
-    <header class="header" id="mainHeader" style="display:none;">
-        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-        <a class="logo" onclick="showScreen('home')">
-    <img src="logo1.jpeg" alt="Logo Deaf and Mute" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid white;">
-    <span>Deaf and Mute</span>
-</a>
-        <nav class="nav-menu">
-            <a class="nav-link" onclick="showScreen('home')">Inicio</a>
-            <a class="nav-link" onclick="showScreen('levels')">Niveles</a>
-            <a class="nav-link" onclick="showScreen('gallery')">Galería</a>
-            <a class="nav-link" onclick="showScreen('profile')">Perfil</a>
-            <!-- Admin only -->
-            <a class="nav-link nav-admin" onclick="showScreen('admin')">⚙️ Admin</a>
-            <!-- Auditor only -->
-            <a class="nav-link nav-auditor" onclick="showScreen('auditor')">📊 Auditoría</a>
-            
-            <div class="user-badge" onclick="showScreen('profile')">
-                <span id="userNameDisplay">Usuario</span>
-                <span id="userRoleBadge" class="role-badge role-user">Usuario</span>
-            </div>
+<header class="header" id="mainHeader" style="display:none;">
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <a class="logo" onclick="showScreen('home')">
+        <img src="logo1.jpeg" alt="Logo Deaf and Mute" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid white;">
+        <span>Deaf and Mute</span>
+    </a>
+    <nav class="nav-menu">
+        <a class="nav-link" onclick="showScreen('home')">Inicio</a>
+        <a class="nav-link" onclick="showScreen('levels')">Niveles</a>
+        <a class="nav-link" onclick="showScreen('gallery')">Galería</a>
+        <a class="nav-link" onclick="showScreen('profile')">Perfil</a>
+        
+        <!-- Admin / Auditor -->
+        <a class="nav-link nav-admin" onclick="showScreen('admin')">⚙️ Admin</a>
+        <a class="nav-link nav-auditor" onclick="showScreen('auditor')">📊 Auditoría</a>
+        
+        <div class="user-badge" onclick="showScreen('profile')">
+            <span id="userNameDisplay">Usuario</span>
+            <span id="userRoleBadge" class="role-badge role-user">Usuario</span>
+        </div>
 
-            <!-- BOTÓN DE CERRAR SESIÓN (NUEVO) -->
-            <a class="nav-link" onclick="logout()" style="display: flex; align-items: center; gap: 5px; color: #ffa39e;">🚪 Salir</a>
-
-        </nav>
-    </header>
+        <!-- Botón de Cerrar Sesión visible en Escritorio -->
+        <button class="btn-logout-desktop" onclick="logout()">
+            🚪 Cerrar Sesión
+        </button>
+    </nav>
+</header>
 
     <!-- Sidebar móvil -->
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
