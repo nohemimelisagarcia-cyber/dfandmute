@@ -149,3 +149,4 @@ deaf-and-mute/
 Proyecto desarrollado para fines educativos en el marco del Hackathon MINED El Rama 2026.
 
 © 2026 Deaf and Mute. Todos los derechos reservados.
+# Actualizacion de Documentacion
