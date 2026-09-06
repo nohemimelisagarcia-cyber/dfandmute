@@ -1,37 +1,46 @@
-const CACHE_NAME = 'deaf-mute-v2';
+const CACHE_NAME = 'deaf-mute-cache';
 const urlsToCache = [
     './',
     './index.html',
     './logo1.jpeg'
 ];
 
-// 1. Evento Install: Guardar archivos en caché
+// 1. Instalación e inicialización
 self.addEventListener('install', event => {
+    self.skipWaiting(); // Obliga al nuevo Service Worker a activarse de inmediato
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => cache.addAll(urlsToCache))
     );
 });
 
-// 2. Evento Activate: Limpiar cachés antiguas (v1)
+// 2. Activación y toma de control
 self.addEventListener('activate', event => {
     event.waitUntil(
-        caches.keys().then(cacheNames => {
-            return Promise.all(
-                cacheNames.map(cache => {
-                    if (cache !== CACHE_NAME) {
-                        return caches.delete(cache);
-                    }
-                })
-            );
-        })
+        clients.claim() // Toma control inmediato de todas las pestañas abiertas
     );
 });
 
-// 3. Evento Fetch: Responder desde la caché o la red
+// 3. Estrategia Network First (Red primero, respaldo en caché)
 self.addEventListener('fetch', event => {
+    // Solo procesar peticiones HTTP/HTTPS
+    if (!event.request.url.startsWith('http')) return;
+
     event.respondWith(
-        caches.match(event.request)
-            .then(response => response || fetch(event.request))
+        fetch(event.request)
+            .then(networkResponse => {
+                // Si hay internet y la respuesta es válida, actualizamos la caché
+                if (networkResponse && networkResponse.status === 200) {
+                    const responseClone = networkResponse.clone();
+                    caches.open(CACHE_NAME).then(cache => {
+                        cache.put(event.request, responseClone);
+                    });
+                }
+                return networkResponse;
+            })
+            .catch(() => {
+                // Si NO hay internet (offline), servir desde la caché
+                return caches.match(event.request);
+            })
     );
 });
