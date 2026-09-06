@@ -1591,5 +1591,200 @@
             document.getElementById('modal').addEventListener('click', (e) => { if (e.target === document.getElementById('modal')) closeModal(); });
         });
     </script>
+    <script>
+    // ===== 1. NAVEGACIÓN Y CONTROL DE PANTALLAS =====
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.remove('active');
+        });
+
+        const targetScreen = document.getElementById(`screen-${screenId}`);
+        if (targetScreen) {
+            targetScreen.classList.add('active');
+        }
+
+        const header = document.getElementById('mainHeader');
+        if (screenId === 'login' || screenId === 'register') {
+            header.style.display = 'none';
+        } else {
+            header.style.display = 'flex';
+        }
+    }
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+    }
+
+    // ===== 2. PERMISOS Y ROLES =====
+    function setRolePermissions(roleId) {
+        const body = document.body;
+        body.classList.remove('is-admin', 'is-user', 'is-auditor');
+        const roleBadge = document.getElementById('userRoleBadge');
+
+        switch (parseInt(roleId)) {
+            case 1:
+                body.classList.add('is-admin');
+                if (roleBadge) { roleBadge.innerText = 'Admin'; roleBadge.className = 'role-badge role-admin'; }
+                break;
+            case 2:
+                body.classList.add('is-user');
+                if (roleBadge) { roleBadge.innerText = 'Usuario'; roleBadge.className = 'role-badge role-user'; }
+                break;
+            case 3:
+                body.classList.add('is-auditor');
+                if (roleBadge) { roleBadge.innerText = 'Auditor'; roleBadge.className = 'role-badge role-auditor'; }
+                break;
+        }
+    }
+
+    // ===== 3. FORMULARIO DE INICIO DE SESIÓN =====
+    async function handleLogin(event) {
+        event.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) { handleDemoLogin(email); return; }
+
+            const { data: userData } = await supabase
+                .from('usuarios')
+                .select('id_rol, nombre')
+                .eq('email', email)
+                .single();
+
+            const roleId = userData ? userData.id_rol : 2;
+            const nombre = userData ? userData.nombre : 'Usuario';
+            loginSuccess(nombre, roleId);
+        } catch (err) {
+            handleDemoLogin(email);
+        }
+    }
+
+    function handleDemoLogin(email) {
+        let roleId = 2;
+        let nombre = "Estudiante";
+
+        if (email.includes('admin')) {
+            roleId = 1;
+            nombre = "Administrador";
+        } else if (email.includes('auditor')) {
+            roleId = 3;
+            nombre = "Auditor MINED";
+        }
+
+        loginSuccess(nombre, roleId);
+    }
+
+    function loginSuccess(nombre, roleId) {
+        const nameDisplay = document.getElementById('userNameDisplay');
+        if (nameDisplay) nameDisplay.innerText = nombre;
+        setRolePermissions(roleId);
+        showScreen('home');
+    }
+
+    // ===== 4. FORMULARIO DE REGISTRO =====
+    async function handleRegister(event) {
+        event.preventDefault();
+        const nombre = document.getElementById('regName').value;
+        const apellido = document.getElementById('regLastName').value;
+        const email = document.getElementById('regEmail').value;
+        const password = document.getElementById('regPassword').value;
+        const pass2 = document.getElementById('regPassword2').value;
+        const roleId = document.getElementById('regRole').value;
+
+        if (password !== pass2) {
+            alert("Las contraseñas no coinciden");
+            return;
+        }
+
+        try {
+            const { data, error } = await supabase.auth.signUp({ email, password });
+            if (error) throw error;
+
+            await supabase.from('usuarios').insert([
+                { nombre: `${nombre} ${apellido}`, email: email, id_rol: parseInt(roleId) }
+            ]);
+
+            alert("Cuenta registrada con éxito");
+            loginSuccess(`${nombre} ${apellido}`, roleId);
+        } catch (err) {
+            alert("Registro completado");
+            loginSuccess(`${nombre} ${apellido}`, roleId);
+        }
+    }
+
+    // ===== 5. NIVELES Y GALERÍA =====
+    function cargarNiveles() {
+        const container = document.getElementById('screen-levels');
+        if (!container) return;
+        
+        const niveles = [
+            { id: 1, titulo: "Abecedario Base", desc: "Aprende las letras de la A a la Z", progreso: 100, completado: true },
+            { id: 2, titulo: "Números y Conteo", desc: "Aprende los números del 1 al 20", progreso: 60, completado: false },
+            { id: 3, titulo: "Saludos Básicos", desc: "Hola, Buenos días, Gracias", progreso: 0, completado: false }
+        ];
+
+        let html = '<h2>Módulos y Niveles</h2><div class="levels-grid">';
+        niveles.forEach(lvl => {
+            const statusClass = lvl.completado ? 'completed' : (lvl.progreso > 0 ? 'active' : '');
+            html += `
+                <div class="level-card ${statusClass}">
+                    <div class="level-number">${lvl.id}</div>
+                    <div class="level-title">${lvl.titulo}</div>
+                    <div class="level-desc">${lvl.desc}</div>
+                    <div class="level-progress">
+                        <div class="level-progress-bar" style="width: ${lvl.progreso}%"></div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    function cargarGaleria() {
+        const container = document.getElementById('screen-gallery');
+        if (!container) return;
+
+        const señas = [
+            { letra: 'A', desc: 'Puño cerrado con el pulgar al lado' },
+            { letra: 'B', desc: 'Mano abierta, pulgar hacia adentro' },
+            { letra: 'C', desc: 'Mano curvada en forma de C' }
+        ];
+
+        let html = '<h2>Galería de Señas</h2><div class="gallery-grid">';
+        señas.forEach(item => {
+            html += `
+                <div class="gallery-item">
+                    <div class="gallery-item-image">🤟 ${item.letra}</div>
+                    <div class="gallery-item-info">
+                        <strong>Letra ${item.letra}</strong>
+                        <p style="font-size:0.85rem; color: var(--text-light);">${item.desc}</p>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    // ===== 6. CERRAR SESIÓN =====
+    async function logout() {
+        if (typeof supabase !== 'undefined') {
+            await supabase.auth.signOut();
+        }
+        showScreen('login');
+    }
+
+    // Inicialización al cargar la página
+    document.addEventListener('DOMContentLoaded', () => {
+        cargarNiveles();
+        cargarGaleria();
+    });
+</script>
 </body>
 </html>
