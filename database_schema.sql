@@ -253,18 +253,27 @@ ORDER BY a.created_at DESC;
 -- ============================================================
 CREATE OR REPLACE FUNCTION fn_audit_trigger()
 RETURNS TRIGGER AS $$
+DECLARE
+    v_user_id INTEGER;
 BEGIN
+    -- Intentar obtener el ID desde app.current_user_id o dejarlo NULL
+    BEGIN
+        v_user_id := NULLIF(current_setting('app.current_user_id', true), '')::INTEGER;
+    EXCEPTION WHEN OTHERS THEN
+        v_user_id := NULL;
+    END;
+
     IF (TG_OP = 'DELETE') THEN
         INSERT INTO audit_logs (user_id, accion, tabla_afectada, registro_id, datos_anteriores)
-        VALUES (current_setting('app.current_user_id')::INTEGER, 'DELETE', TG_TABLE_NAME, OLD.id, row_to_json(OLD));
+        VALUES (v_user_id, 'DELETE', TG_TABLE_NAME, OLD.id, row_to_json(OLD));
         RETURN OLD;
     ELSIF (TG_OP = 'UPDATE') THEN
         INSERT INTO audit_logs (user_id, accion, tabla_afectada, registro_id, datos_anteriores, datos_nuevos)
-        VALUES (current_setting('app.current_user_id')::INTEGER, 'UPDATE', TG_TABLE_NAME, NEW.id, row_to_json(OLD), row_to_json(NEW));
+        VALUES (v_user_id, 'UPDATE', TG_TABLE_NAME, NEW.id, row_to_json(OLD), row_to_json(NEW));
         RETURN NEW;
     ELSIF (TG_OP = 'INSERT') THEN
         INSERT INTO audit_logs (user_id, accion, tabla_afectada, registro_id, datos_nuevos)
-        VALUES (current_setting('app.current_user_id')::INTEGER, 'CREATE', TG_TABLE_NAME, NEW.id, row_to_json(NEW));
+        VALUES (v_user_id, 'CREATE', TG_TABLE_NAME, NEW.id, row_to_json(NEW));
         RETURN NEW;
     END IF;
     RETURN NULL;
