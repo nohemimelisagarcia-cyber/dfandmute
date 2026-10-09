@@ -2729,5 +2729,19 @@
             localStorage.setItem('lsnUser', JSON.stringify(currentUser));
         };
     </script>
+    <!-- Menú Lateral Desplegable (Sidebar para móviles) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Menú</h3>
+        </div>
+        <div class="sidebar-menu">
+            <a class="sidebar-item" onclick="toggleSidebar(); showScreen('home')">🏠 Inicio</a>
+            <a class="sidebar-item" onclick="toggleSidebar(); showScreen('levels')">📚 Niveles</a>
+            <a class="sidebar-item" onclick="toggleSidebar(); showScreen('gallery')">🖼️ Galería</a>
+            <a class="sidebar-item" onclick="toggleSidebar(); showScreen('profile')">👤 Perfil</a>
+            <a class="sidebar-item" onclick="toggleSidebar(); logout()">🚪 Cerrar Sesión</a>
+        </div>
+    </div>
 </body>
 </html>
